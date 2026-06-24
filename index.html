@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>麗山高中生物科 - 歷年教師課表系統</title>
+    <!-- Google Fonts: Outfit and Noto Sans TC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for beautiful icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="background-glows">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+    </div>
+
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <i class="fa-solid fa-calendar-days logo-icon"></i>
+                <div class="logo-text">
+                    <h1>麗山生物</h1>
+                    <span class="subtitle">歷年課表查詢系統</span>
+                </div>
+            </div>
+            <div class="quick-actions">
+                <button id="btn-current-year" class="btn btn-primary btn-glow">
+                    <i class="fa-solid fa-bolt"></i> 快速查詢 114 學年度
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main">
+        <!-- Teacher Select Tabs -->
+        <section class="tabs-section">
+            <div class="tabs-container">
+                <button class="tab-btn active" data-teacher="林獻升">
+                    <span class="tab-avatar lin-avatar"><i class="fa-solid fa-user-tie"></i></span>
+                    <div class="tab-info">
+                        <span class="tab-title">林獻升 老師</span>
+                        <span class="tab-subtitle">歷屆課表 (92-114)</span>
+                    </div>
+                </button>
+                <button class="tab-btn" data-teacher="郭瓊華">
+                    <span class="tab-avatar kuo-avatar"><i class="fa-solid fa-user-graduate"></i></span>
+                    <div class="tab-info">
+                        <span class="tab-title">郭瓊華 老師</span>
+                        <span class="tab-subtitle">歷屆課表 (91-114)</span>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- Filters Control Center -->
+        <section class="filters-section">
+            <div class="filters-card glassmorphism">
+                <div class="filter-row main-filters">
+                    <div class="filter-group">
+                        <label for="filter-year"><i class="fa-solid fa-calendar"></i> 學年度</label>
+                        <select id="filter-year" class="custom-select">
+                            <option value="all">所有學年度</option>
+                            <!-- Dynamic populated -->
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-semester"><i class="fa-solid fa-circle-half-stroke"></i> 學期</label>
+                        <select id="filter-semester" class="custom-select">
+                            <option value="all">所有學期</option>
+                            <option value="1">第一學期</option>
+                            <option value="2">第二學期</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-type"><i class="fa-solid fa-tags"></i> 課表類型</label>
+                        <select id="filter-type" class="custom-select">
+                            <option value="all">全部課表</option>
+                            <option value="teacher">教師課表</option>
+                            <option value="class">班級課表 (導師課表)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="filter-row search-row">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="search-input" placeholder="輸入關鍵字查詢課表內容 (如：班級309、生物選、專題研究、高一等)...">
+                        <button id="btn-search-clear" class="search-clear-btn" style="display: none;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="stats-indicator">
+                    <span id="results-count">共載入 0 張課表</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timetable Gallery -->
+        <section class="gallery-section">
+            <!-- Loading Indicator -->
+            <div id="loading-spinner" class="loading-container">
+                <div class="spinner"></div>
+                <p>正在加載課表資料，請稍候...</p>
+            </div>
+
+            <!-- Empty Results -->
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <i class="fa-regular fa-calendar-times empty-icon"></i>
+                <h3>找不到符合篩選條件的課表</h3>
+                <p>試著調整篩選器或清除搜尋關鍵字</p>
+                <button id="btn-reset-filters" class="btn btn-secondary">重設所有篩選</button>
+            </div>
+
+            <!-- Dynamic Timetable Grid grouped by Years -->
+            <div id="timetable-container" class="timetable-container">
+                <!-- Group templates will be inserted here dynamically -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <p>© 2026 臺北市立麗山高級中學 生物科. All Rights Reserved.</p>
+            <p class="tech-tag">Powered by Advanced Agentic OCR Pipeline</p>
+        </div>
+    </footer>
+
+    <!-- Lightbox Modal for zooming images -->
+    <div id="lightbox" class="lightbox-modal">
+        <button class="lightbox-close" id="lightbox-close"><i class="fa-solid fa-xmark"></i></button>
+        <button class="lightbox-prev" id="lightbox-prev"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="lightbox-next" id="lightbox-next"><i class="fa-solid fa-chevron-right"></i></button>
+        
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="Timetable Zoom">
+            <div class="lightbox-caption">
+                <h3 id="lightbox-title">林獻升 老師 - 109 學年度第 2 學期</h3>
+                <p id="lightbox-meta">教師課表 | 頁碼: 50</p>
+                <div class="lightbox-ocr-view">
+                    <button id="btn-toggle-ocr" class="btn btn-mini"><i class="fa-solid fa-file-lines"></i> 顯示辨識文字</button>
+                    <div id="lightbox-ocr-text" class="ocr-text-box" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Javascript -->
+    <script src="index.js"></script>
+</body>
+</html>
