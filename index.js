@@ -16,7 +16,6 @@ const elements = {
     filterType: document.getElementById('filter-type'),
     searchInput: document.getElementById('search-input'),
     btnSearchClear: document.getElementById('btn-search-clear'),
-    btnCurrentYear: document.getElementById('btn-current-year'),
     btnResetFilters: document.getElementById('btn-reset-filters'),
     
     // Tabs
@@ -124,31 +123,6 @@ function initApp() {
         applyFiltersAndRender();
     });
     
-    // "Current Year" Quick action button
-    elements.btnCurrentYear.addEventListener('click', () => {
-        // Find latest available year in data
-        const teacherData = timetableData.filter(d => d.teacher === currentTeacher);
-        const years = teacherData.map(d => d.year).filter(Boolean);
-        const latestYear = years.length > 0 ? Math.max(...years) : 114;
-        
-        // Reset all filters to "all" but select the latest year
-        elements.filterYear.value = latestYear.toString();
-        elements.filterSemester.value = "all";
-        elements.filterType.value = "all";
-        elements.searchInput.value = "";
-        
-        selectedYear = latestYear.toString();
-        selectedSemester = "all";
-        selectedType = "all";
-        searchQuery = "";
-        elements.btnSearchClear.style.display = 'none';
-        
-        applyFiltersAndRender();
-        
-        // Smooth scroll to container top
-        elements.timetableContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-    
     // Reset filters button in Empty State
     elements.btnResetFilters.addEventListener('click', () => {
         resetFiltersExceptTeacher();
@@ -205,8 +179,10 @@ function resetFiltersExceptTeacher() {
 
 // 4. Update Year Dropdown dynamically depending on current active teacher
 function updateYearDropdown() {
-    // Get unique years for the current teacher
-    const teacherData = timetableData.filter(d => d.teacher === currentTeacher);
+    // Get unique years for the current teacher(s)
+    const teacherData = currentTeacher === "both"
+        ? timetableData
+        : timetableData.filter(d => d.teacher === currentTeacher);
     const yearsSet = new Set(teacherData.map(d => d.year).filter(Boolean));
     const sortedYears = Array.from(yearsSet).sort((a, b) => b - a); // descending
     
@@ -224,8 +200,8 @@ function updateYearDropdown() {
 function applyFiltersAndRender() {
     // Filter data
     activeItems = timetableData.filter(item => {
-        // Teacher Filter
-        if (item.teacher !== currentTeacher) return false;
+        // Teacher Filter (show both if 'both' is selected)
+        if (currentTeacher !== "both" && item.teacher !== currentTeacher) return false;
         
         // Year Filter
         if (selectedYear !== "all" && item.year?.toString() !== selectedYear) return false;
@@ -244,18 +220,22 @@ function applyFiltersAndRender() {
             const matchClass = item.className?.toLowerCase().includes(searchQuery);
             const matchOcrText = item.text?.toLowerCase().includes(searchQuery);
             
-            if (!matchYear && !matchSem && !matchType && !matchClass && !matchOcrText) {
-                return false;
+            if (!matchYear && !matchSem && !matchType && !matchClass && matchOcrText === false) {
+                // If text is not null, try matching it
+                if (!item.text || !item.text.toLowerCase().includes(searchQuery)) {
+                    return false;
+                }
             }
         }
         
         return true;
     });
     
-    // Sort items: Year DESC, Semester DESC, Type ASC (teacher first, class second)
+    // Sort items: Year DESC, Semester DESC, Teacher DESC (or ASC), Type ASC
     activeItems.sort((a, b) => {
         if (a.year !== b.year) return b.year - a.year;
         if (a.semester !== b.semester) return b.semester - a.semester;
+        if (a.teacher !== b.teacher) return a.teacher.localeCompare(b.teacher); // keep teacher pages together
         if (a.type !== b.type) return a.type.localeCompare(b.type); // teacher before class
         return a.page - b.page;
     });
